@@ -20,6 +20,7 @@ our %EXPORT_TAGS = (
   FindWindow
   ShowWindow
   GetCursorPos
+  SetCursorPos
   GetClientRect
   GetWindowRect
   BringWindowToTop
@@ -85,7 +86,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = @{ $EXPORT_TAGS{'default'} };
 
-our $VERSION = '1.10';
+our $VERSION = '1.20';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -533,6 +534,10 @@ The function sets the specified window's show state.
 =item GetCursorPos( )
 
 The function retrieves the cursor's position, in screen coordinates.
+
+=item SetCursorPos( $x, $y )
+
+The function moves the cursor to the specified screen coordinates.
 
 =item GetClientRect( $hwnd )
 

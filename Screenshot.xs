@@ -107,6 +107,17 @@ PPCODE:
 
 ############################################################################
 
+BOOL
+SetCursorPos(x,y)
+    int x
+    int y
+CODE:
+    RETVAL = SetCursorPos(x, y);
+OUTPUT:
+    RETVAL
+
+############################################################################
+
 void
 GetClientRect(handle)
     HWND handle

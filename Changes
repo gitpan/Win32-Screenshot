@@ -6,3 +6,6 @@ Revision history for Perl extension Win32::Screenshot.
 1.10  Tue Feb 17 15:37:23 2004
         - fix: ppResize now uses Lanczos filter
         - new: separated post-processing from CreateImage into PostProcessImage function
+
+1.20  Wed Feb 25 13:44:19 2004
+        - new:
