@@ -59,6 +59,7 @@ our %EXPORT_TAGS = (
   JoinRawData
   CaptureHwndRect
   CreateImage
+  PostProcessImage
   @POST_PROCESS
 ) ],
 
@@ -84,7 +85,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
 our @EXPORT = @{ $EXPORT_TAGS{'default'} };
 
-our $VERSION = '1.00';
+our $VERSION = '1.10';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -115,7 +116,7 @@ sub ppResize {
   my ($w, $h) = $_->Get('width', 'height');
   $w = sprintf "%.0f", $w*$ratio;
   $h = sprintf "%.0f", $h*$ratio;
-  $_->Resize(width=>$w,height=>$h,blur=>0.9);
+  $_->Resize(width=>$w,height=>$h,blur=>0.9,filter=>'Sinc');
 }
 
 sub ppOuterGlow {
@@ -188,6 +189,11 @@ sub CreateImage {
   $image->Set(depth=>8);
   $image->BlobToImage($_[2]);
 
+  return PostProcessImage($image);
+}
+
+sub PostProcessImage {
+  my $image = shift;
   my $out;
   for my $hnd ( @POST_PROCESS ) {
     $_ = $image;
@@ -200,7 +206,6 @@ sub CreateImage {
       $image = $out;
     }
   }
-
   return $image;
 }
 
@@ -270,10 +275,11 @@ If you want to modify the list just use push or direct access.
     sub { $_[0]->Blur(); }
   );
 
-Handlers are executed starting with $POST_PROCESS[0]. The function
-C<CreateImage> manages the post-processing list. This function
-is called from all C<Capture*(...)> functions, you don't have to call
-it explicitly.
+Handlers are executed starting with $POST_PROCESS[0]. The
+function C<CreateImage> calls C<PostProcessImage> function
+which manages the post-processing list. This function
+is called from all C<Capture*(...)> functions, you don't
+have to call it explicitly.
 
 See chapter L<Post-processing handlers> for details on build-in handlers.
 
@@ -296,6 +302,7 @@ C<@POST_PROCESS>
 C<CaptureHwndRect>
 C<CreateImage>
 C<JoinRawData>
+C<PostProcessImage>
 
 =item :pp
 
@@ -393,11 +400,11 @@ exported by default, import them with C<:raw> tag.
 
 =item CaptureHwndRect( $hwnd, $x, $y, $width, $height )
 
-The function captures the part of the screen and returns a list
-of ($width, $height, $screendata). Where $width and $height are the
-dimensions of the bitmap in pixels and $screendata is a buffer filled
-with RGBA (4-bytes) data representing the bitmap (Alpha is always
-0xFF).
+The function captures the part of the screen and returns
+a list of ($width, $height, $screendata). Where $width and
+$height are the dimensions of the bitmap in pixels and
+$screendata is a buffer filled with RGBA (4-bytes) data
+representing the bitmap (Alpha is always 0xFF).
 
 =item JoinRawData( $width1, $width2, $height, $raw1, $raw2 )
 
@@ -406,9 +413,14 @@ the new bitmap data.
 
 =item CreateImage( $width, $height, $rawdata )
 
-Creates a new Image::Magick object from provided data and calls all
-listed post-processing handlers. The function returns the processed
-object.
+Creates a new Image::Magick object from provided data and
+calls all listed post-processing handlers. The function
+returns the processed object.
+
+=item PostProcessImage( $image )
+
+Calls all listed post-processing handlers. The function
+returns the processed object.
 
 =back
 
@@ -427,7 +439,8 @@ all captured images and then simply C<Write> the image to the file.
 
 =item ppResize( $ratio )
 
-Resizes the image by the specified ratio.
+Resizes the image by the specified ratio. It uses Lanczos
+filter and default ratio 0.74.
 
 =item ppOuterGlow( $outercolor, $innercolor, $size )
 
